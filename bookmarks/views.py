@@ -1,14 +1,28 @@
-from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
 from .models import *
 from .serializers import *
 from rest_framework.response import Response
+from rest_framework import permissions, status
+from rest_framework.views import APIView
+
 
 class UsersView(viewsets.ModelViewSet):
     queryset = Users.objects.all()
     serializer_class = UsersSerializer
 
-    def retrieve(self, request, pk=None):
+    permission_classes = []
+
+    def perform_create(self, serializer):
+        # Hash password but passwords are not required
+        if ('password' in self.request.data):
+            password = make_password(self.request.data['password'])
+            serializer.save(password=password)
+        else:
+            serializer.save()
+
+    def list(self, request, format=None):
+        pk = Users.objects.get(id_user=self.request.user.id_user).id_user
 
         dados = {
             "user": UsersSerializer(Users.objects.get(id_user=int(pk))).data,
