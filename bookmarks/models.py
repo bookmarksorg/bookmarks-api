@@ -16,13 +16,13 @@ class Genres(models.Model):
 class Books(models.Model):
     cod_ISBN = models.CharField(max_length=13, primary_key=True)
     title = models.CharField(max_length=100)
-    author = models.CharField(max_length=50)
-    language = models.CharField(max_length=30)
-    blurb = models.TextField()
-    published = models.DateTimeField()
-    number_pages = models.IntegerField()
-    cover = models.FileField()
-    genres = models.ManyToManyField(Genres)
+    author = models.CharField(max_length=50, blank=True, null=True)
+    language = models.CharField(max_length=30, blank=True, null=True)
+    blurb = models.TextField(blank=True, null=True)
+    published = models.DateTimeField(blank=True, null=True)
+    number_pages = models.IntegerField(blank=True, null=True)
+    cover = models.URLField(blank=True, null=True)
+    genres = models.ManyToManyField(Genres, blank=True)
     rating = models.FloatField(null=True, blank=True)
 
     class Meta:
