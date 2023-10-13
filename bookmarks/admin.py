@@ -11,4 +11,4 @@ class BooksForm(admin.ModelAdmin):
 
 
 admin.site.register(Users, UsersForm)
-admin.site.register(Books, BooksForm)
+admin.site.register(Book, BooksForm)

@@ -3,27 +3,27 @@ from .models import *
 
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genres
+        model = Genre
         fields = '__all__'
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = fields = '__all__'
+        fields = '__all__'
     
 class BooksSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Books
+        model = Book
         fields = '__all__'
 
 class ReviewsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Reviews
+        model = Review
         fields = '__all__'
 
 class DiscussionsSerializer(serializers.ModelSerializer):    
     class Meta:
-        model = Discussions
+        model = Discussion
         fields = '__all__'
 
     def to_representation(self, obj):

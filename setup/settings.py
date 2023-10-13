@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 
 SIMPLE_JWT = {
     "USER_ID_FIELD": "id_user",
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 

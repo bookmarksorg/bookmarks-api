@@ -1,0 +1,92 @@
+[
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Terror"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Drama"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Thriller"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Musical"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Romance"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Fantasy"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Western"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "War"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Action"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Sport"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Medicine"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Sci-Fi"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Documentary"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Comedy"
+        }
+    },
+    {
+        "model": "bookmarks.genre",
+        "fields": {
+            "name": "Family"
+        }
+    }
+]

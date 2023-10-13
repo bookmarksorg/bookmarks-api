@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 
-class Genres(models.Model):
+class Genre(models.Model):
     id_gender = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30)
 
@@ -13,7 +13,7 @@ class Genres(models.Model):
         return self.name
 
     
-class Books(models.Model):
+class Book(models.Model):
     cod_ISBN = models.CharField(max_length=13, primary_key=True)
     title = models.CharField(max_length=100)
     author = models.CharField(max_length=50, blank=True, null=True)
@@ -22,7 +22,7 @@ class Books(models.Model):
     published = models.DateTimeField(blank=True, null=True)
     number_pages = models.IntegerField(blank=True, null=True)
     cover = models.URLField(blank=True, null=True)
-    genres = models.ManyToManyField(Genres, blank=True)
+    genres = models.ManyToManyField(Genre, blank=True)
     rating = models.FloatField(null=True, blank=True)
 
     class Meta:
@@ -69,8 +69,8 @@ class Users(AbstractUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     date_birth = models.DateField(blank=True, null=True)
     points = models.IntegerField(null=True, blank=True)
-    genres = models.ManyToManyField(Genres, blank=True)
-    favorite_books = models.ManyToManyField(Books, blank=True)
+    genres = models.ManyToManyField(Genre, blank=True)
+    favorite_books = models.ManyToManyField(Book, blank=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ['email']
@@ -93,14 +93,14 @@ class Users(AbstractUser, PermissionsMixin):
         return self.username
     
 
-class Reviews(models.Model):
+class Review(models.Model):
     id_review = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
     rating = models.FloatField()
     date = models.DateField()
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    cod_ISBN = models.ForeignKey(Books, on_delete=models.CASCADE)
+    cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-date']
@@ -110,13 +110,13 @@ class Reviews(models.Model):
         return self.title
     
     
-class Discussions(models.Model):
+class Discussion(models.Model):
     id_discussion = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
     date = models.DateField()
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    cod_ISBN = models.ForeignKey(Books, on_delete=models.CASCADE)
+    cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-date']
@@ -127,8 +127,8 @@ class Discussions(models.Model):
     
 class TaggedDiscussions(models.Model):
     id_tagged = models.AutoField(primary_key=True)
-    id_user = models.ForeignKey(Users,  on_delete=models.CASCADE)
-    id_discussion = models.ForeignKey(Discussions,  on_delete=models.CASCADE)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    id_discussion = models.ForeignKey(Discussion,  on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['id_tagged']
@@ -140,8 +140,8 @@ class TaggedDiscussions(models.Model):
 
 class LikedDiscussions(models.Model):
     id_liked = models.AutoField(primary_key=True)
-    id_user = models.ForeignKey(Users,  on_delete=models.CASCADE)
-    id_discussion = models.ForeignKey(Discussions,  on_delete=models.CASCADE)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    id_discussion = models.ForeignKey(Discussion,  on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['id_liked']
@@ -157,7 +157,7 @@ class Comments(models.Model):
     date = models.DateField()
     id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    cod_ISBN = models.ForeignKey(Books, on_delete=models.CASCADE)
+    cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-date']
@@ -169,8 +169,8 @@ class Comments(models.Model):
 
 class LikedComments(models.Model):
     id_liked = models.AutoField(primary_key=True)
-    id_user = models.ForeignKey(Users,  on_delete=models.CASCADE)
-    id_discussion = models.ForeignKey(Discussions,  on_delete=models.CASCADE)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    id_discussion = models.ForeignKey(Discussion,  on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['id_liked']
