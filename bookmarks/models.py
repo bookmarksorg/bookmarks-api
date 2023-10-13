@@ -97,9 +97,11 @@ class Review(models.Model):
     id_review = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    rating = models.FloatField()
-    date = models.DateField()
-    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    date = models.DateTimeField(auto_now_add=True)
+    is_adult = models.BooleanField(default=False)
+    is_spoiler = models.BooleanField(default=False)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
@@ -114,8 +116,10 @@ class Discussion(models.Model):
     id_discussion = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     description = models.TextField()
-    date = models.DateField()
-    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    is_adult = models.BooleanField(default=False)
+    is_spoiler = models.BooleanField(default=False)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
@@ -124,7 +128,7 @@ class Discussion(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 class TaggedDiscussions(models.Model):
     id_tagged = models.AutoField(primary_key=True)
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -156,7 +160,7 @@ class Comments(models.Model):
     description = models.TextField()
     date = models.DateField()
     id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
-    id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     cod_ISBN = models.ForeignKey(Book, on_delete=models.CASCADE)
 
     class Meta:
@@ -165,7 +169,12 @@ class Comments(models.Model):
 
     def __str__(self):
         return str(self.id_comment)
-    
+
+    def answers(self):
+        return Comments.objects.filter(id_related_comment=self.id_comment).count()
+
+    def likes(self):
+        return LikedComments.objects.filter(id_comment=self.id_comment).count()
 
 class LikedComments(models.Model):
     id_liked = models.AutoField(primary_key=True)

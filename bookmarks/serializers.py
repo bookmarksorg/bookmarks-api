@@ -21,31 +21,10 @@ class ReviewsSerializer(serializers.ModelSerializer):
         model = Review
         fields = '__all__'
 
-class DiscussionsSerializer(serializers.ModelSerializer):    
+class DiscussionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discussion
         fields = '__all__'
-
-    def to_representation(self, obj):
-        qty_comments = 0
-        qty_likes = 0
-        qty_tags = 0
-        
-
-        book = {
-            "cod_ISBN": obj.cod_ISBN.pk,
-            "title": obj.cod_ISBN.title
-        },
-        return {
-            'id_discussion': obj.id_discussion,
-            'title': obj.title,
-            'description': obj.description,
-            'date': obj.date,
-            'book': book,
-            "qty_comments": qty_comments,
-            "qty_likes": qty_likes,
-            "qty_tags": qty_tags
-        },
 
 class TaggedDiscussionsSerializer(serializers.ModelSerializer):
     class Meta:

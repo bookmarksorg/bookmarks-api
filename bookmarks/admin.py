@@ -9,6 +9,13 @@ class UsersForm(admin.ModelAdmin):
 class BooksForm(admin.ModelAdmin):
     list_display = ['title', 'number_pages']
 
+class ReviewsForm(admin.ModelAdmin):
+    list_display = ['title', 'id_user']
+
+class DiscussionsForm(admin.ModelAdmin):
+    list_display = ['title', 'id_user']
 
 admin.site.register(Users, UsersForm)
 admin.site.register(Book, BooksForm)
+admin.site.register(Review, ReviewsForm)
+admin.site.register(Discussion, DiscussionsForm)
