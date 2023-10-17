@@ -12,7 +12,7 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-    
+
 class Book(models.Model):
     cod_ISBN = models.CharField(max_length=13, primary_key=True)
     title = models.CharField(max_length=100)
@@ -23,7 +23,6 @@ class Book(models.Model):
     number_pages = models.IntegerField(blank=True, null=True)
     cover = models.URLField(blank=True, null=True)
     genres = models.ManyToManyField(Genre, blank=True)
-    rating = models.FloatField(null=True, blank=True)
 
     class Meta:
         ordering = ['title']
@@ -31,6 +30,14 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def qty_reviews(self):
+        return Review.objects.filter(cod_ISBN=self).count()
+
+    @property
+    def rating(self):
+        return Review.objects.filter(cod_ISBN=self).aggregate(models.Avg('rating'))['rating__avg'] or 0
 
 
 class CustomUserModelManager(BaseUserManager):

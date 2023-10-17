@@ -2,10 +2,31 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Case, When, Value, F, FloatField
+
 
 from .models import *
 from .serializers import *
 
+
+class BookFilter(filters.FilterSet):
+    title = filters.CharFilter(
+        field_name='title', lookup_expr='icontains')
+    author = filters.CharFilter(
+        field_name='author', lookup_expr='icontains')
+    genres = filters.CharFilter(
+        field_name='genres__name', lookup_expr='iexact')
+
+    order_by = filters.OrderingFilter(
+        fields=(
+            ('published', 'published'),
+        )
+    )
+    class Meta:
+        model = Book
+        fields = []
 
 class UsersView(viewsets.ModelViewSet):
     queryset = Users.objects.all()
@@ -109,6 +130,33 @@ class BooksView(viewsets.ModelViewSet):
     serializer_class = BooksSerializer
 
     permission_classes = []
+
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = BookFilter
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        if 'rating' in request.query_params:
+            if request.query_params['rating'] == 'asc':
+                queryset = queryset.annotate(
+                    custom_rating=Case(
+                        When(review__cod_ISBN=F('cod_ISBN'), then=F('review__rating')),
+                        default=Value(0),
+                        output_field=FloatField()
+                    )
+                ).order_by('custom_rating')
+            elif request.query_params['rating'] == 'desc':
+                queryset = queryset.annotate(
+                    custom_rating=Case(
+                        When(review__cod_ISBN=F('cod_ISBN'), then=F('review__rating')),
+                        default=Value(0),
+                        output_field=FloatField()
+                    )
+                ).order_by('-custom_rating')
+
+        serializer = BooksSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 class ReviewsView(viewsets.ModelViewSet):
     queryset = Review.objects.all()

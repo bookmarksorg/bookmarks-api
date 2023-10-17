@@ -27,7 +27,6 @@ with open('top_500_books_selected_columns.csv', mode='r', encoding='utf-8', newl
                 # 'isbn': row['isbn'],
                 # 'genres': genres,
                 'number_pages': row['pages'],
-                # 'published': row['firstPublishDate'],
                 'cover': row['coverImg'],
             }
         })

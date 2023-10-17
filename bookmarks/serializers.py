@@ -12,6 +12,8 @@ class UsersSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class BooksSerializer(serializers.ModelSerializer):
+    qty_reviews = serializers.ReadOnlyField()
+    rating = serializers.ReadOnlyField()
     class Meta:
         model = Book
         fields = '__all__'
