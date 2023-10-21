@@ -70,12 +70,14 @@ class UsersView(viewsets.ModelViewSet):
             
             request.data.pop('genres')
         
-        if 'favorite_books' in request.data:
-            for book in request.data['favorite_books']:
-                book = Book.objects.get(cod_ISBN=book)
+        if 'favorite_book' in request.data:
+            book = Book.objects.get(cod_ISBN=request.data['favorite_book'])
+            if book not in user.favorite_books.all():
                 user.favorite_books.add(book)
+            else:
+                user.favorite_books.remove(book)
 
-            request.data.pop('favorite_books')
+            request.data.pop('favorite_book')
         serializer = UsersSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -121,6 +123,7 @@ class UsersView(viewsets.ModelViewSet):
                 leaderboard_data.pop()
 
         return Response(leaderboard_data)
+
 class GenresView(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
@@ -157,6 +160,58 @@ class BooksView(viewsets.ModelViewSet):
 
         serializer = BooksSerializer(queryset, many=True)
         return Response(serializer.data)
+    
+    @action (detail=True, methods=['get'])
+    def reviews(self, request, pk=None):
+        book = Book.objects.get(cod_ISBN=pk)
+        reviews = Review.objects.filter(cod_ISBN=book.cod_ISBN)
+
+        data = []
+
+        for review in reviews:
+            data.append({
+                'id_review': review.id_review,
+                'title': review.title,
+                'description': review.description,
+                'rating': review.rating,
+                'date': review.date,
+                'is_adult': review.is_adult,
+                'is_spoiler': review.is_spoiler,
+                'book': {
+                    "cod_ISBN": review.cod_ISBN.pk,
+                    "title": review.cod_ISBN.title
+                },
+                'author': review.id_user.username
+            })
+
+        return Response(data)
+    
+    @action (detail=True, methods=['get'])
+    def discussions(self, request, pk=None):
+        book = Book.objects.get(cod_ISBN=pk)
+        discussions = Discussion.objects.filter(cod_ISBN=book.cod_ISBN)
+
+        data = []
+
+        for discussion in discussions:
+            data.append({
+                'id_discussion': discussion.id_discussion,
+                'title': discussion.title,
+                'description': discussion.description,
+                'date': discussion.date,
+                'is_adult': discussion.is_adult,
+                'is_spoiler': discussion.is_spoiler,
+                'book': {
+                    "cod_ISBN": discussion.cod_ISBN.pk,
+                    "title": discussion.cod_ISBN.title
+                },
+                "qty_comments": discussion.qty_comments,
+                "qty_likes": discussion.qty_likes,
+                "qty_tags": discussion.qty_tags,
+                "author": discussion.id_user.username
+            })
+
+        return Response(data)
 
 class ReviewsView(viewsets.ModelViewSet):
     queryset = Review.objects.all()
@@ -190,9 +245,9 @@ class DiscussionsView(viewsets.ModelViewSet):
                     "cod_ISBN": discussion.cod_ISBN.pk,
                     "title": discussion.cod_ISBN.title
                 },
-                "qty_comments": Comments.objects.filter(id_discussion=discussion.id_discussion).count(),
-                "qty_likes": 0,
-                "qty_tags": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion).count()
+                "qty_comments": discussion.qty_comments,
+                "qty_likes": discussion.qty_likes,
+                "qty_tags": discussion.qty_tags
             })
 
         return Response(data)

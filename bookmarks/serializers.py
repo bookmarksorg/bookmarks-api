@@ -13,7 +13,9 @@ class UsersSerializer(serializers.ModelSerializer):
     
 class BooksSerializer(serializers.ModelSerializer):
     qty_reviews = serializers.ReadOnlyField()
+    qty_discussions = serializers.ReadOnlyField()
     rating = serializers.ReadOnlyField()
+
     class Meta:
         model = Book
         fields = '__all__'
@@ -24,39 +26,23 @@ class ReviewsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DiscussionsSerializer(serializers.ModelSerializer):
+    qty_likes = serializers.ReadOnlyField()
+    qty_comments = serializers.ReadOnlyField()
+    qty_tags = serializers.ReadOnlyField()
+
     class Meta:
         model = Discussion
         fields = '__all__'
 
 class TaggedDiscussionsSerializer(serializers.ModelSerializer):
+    qty_likes = serializers.ReadOnlyField()
+    qty_comments = serializers.ReadOnlyField()
+    qty_tags = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='id_user.username')
+
     class Meta:
         model = TaggedDiscussions
         fields = '__all__'
-
-    def to_representation(self, obj):
-        qty_comments = 0
-        qty_likes = 0
-        qty_tags = 0
-
-        book = {
-            "cod_ISBN": obj.id_discussion.cod_ISBN.pk,
-            "title": obj.id_discussion.cod_ISBN.title
-        },
-        discussions = {
-            'id_discussion': obj.id_discussion.pk,
-            'title': obj.id_discussion.title,
-            'description': obj.id_discussion.description,
-            'date': obj.id_discussion.date,
-            'book': book,
-            "qty_comments": qty_comments,
-            "qty_likes": qty_likes,
-            "qty_tags": qty_tags
-        },
-        return {
-            'id_user': obj.id_user.pk,
-            'username': obj.id_user.username,
-            "discussions": discussions,
-        }
 
 class CommentsSerializer(serializers.ModelSerializer):
     class Meta:

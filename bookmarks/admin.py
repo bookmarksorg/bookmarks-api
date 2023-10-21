@@ -15,6 +15,15 @@ class ReviewsForm(admin.ModelAdmin):
 class DiscussionsForm(admin.ModelAdmin):
     list_display = ['title', 'id_user']
 
+class GenresForm(admin.ModelAdmin):
+    list_display = ['name']
+
+class CommentsForm(admin.ModelAdmin):
+    list_display = ['id_user', 'id_discussion']
+
+
+admin.site.register(Comments, CommentsForm)
+admin.site.register(Genre, GenresForm)
 admin.site.register(Users, UsersForm)
 admin.site.register(Book, BooksForm)
 admin.site.register(Review, ReviewsForm)
