@@ -29,6 +29,7 @@ class DiscussionsSerializer(serializers.ModelSerializer):
     qty_likes = serializers.ReadOnlyField()
     qty_comments = serializers.ReadOnlyField()
     qty_tags = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='id_user.username')
 
     class Meta:
         model = Discussion

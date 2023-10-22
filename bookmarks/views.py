@@ -4,8 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Case, When, Value, F, FloatField
-
+from django.db.models import Case, When, Value, F, FloatField, Count
 
 from .models import *
 from .serializers import *
@@ -15,9 +14,7 @@ class BookFilter(filters.FilterSet):
     title = filters.CharFilter(
         field_name='title', lookup_expr='icontains')
     author = filters.CharFilter(
-        field_name='author', lookup_expr='icontains')
-    genres = filters.CharFilter(
-        field_name='genres__name', lookup_expr='iexact')
+        field_name='author', lookup_expr='iexact')
 
     order_by = filters.OrderingFilter(
         fields=(
@@ -44,6 +41,64 @@ class UsersView(viewsets.ModelViewSet):
 
     def list(self, request, format=None):
         user = Users.objects.get(id_user=self.request.user.id_user)
+        discussions = Discussion.objects.filter(id_user=user.id_user)
+        
+        discussions_data = []
+
+        for discussion in discussions:
+            discussions_data.append({
+                'id_discussion': discussion.id_discussion,
+                'title': discussion.title,
+                'description': discussion.description,
+                'date': discussion.date,
+                "cod_ISBN": discussion.cod_ISBN.pk,
+                "qty_comments": discussion.qty_comments,
+                "qty_likes": discussion.qty_likes,
+                "qty_tags": discussion.qty_tags,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_author": discussion.id_user == self.request.user,
+                'is_adult': discussion.is_adult,
+                'is_spoiler': discussion.is_spoiler,
+                "author": discussion.id_user.username,
+            })
+
+        bookmarks = TaggedDiscussions.objects.filter(id_user=user.id_user)
+
+        bookmarks_data = []
+
+        for bookmark in bookmarks:
+            bookmarks_data.append({
+                'id_discussion': bookmark.id_discussion.id_discussion,
+                'title': bookmark.id_discussion.title,
+                'description': bookmark.id_discussion.description,
+                'date': bookmark.id_discussion.date,
+                "cod_ISBN": bookmark.id_discussion.cod_ISBN.pk,
+                "qty_comments": bookmark.id_discussion.qty_comments,
+                "qty_likes": bookmark.id_discussion.qty_likes,
+                "qty_tags": bookmark.id_discussion.qty_tags,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=bookmark.id_discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=bookmark.id_discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_author": bookmark.id_discussion.id_user == self.request.user,
+                'is_adult': bookmark.id_discussion.is_adult,
+                'is_spoiler': bookmark.id_discussion.is_spoiler,
+                "author": bookmark.id_discussion.id_user.username,
+            })
+        
+        comments = Comments.objects.filter(id_user=user.id_user)
+
+        comments_data = []
+
+        for comment in comments:
+            comments_data.append({
+                'id_comment': comment.id_comment,
+                'description': comment.description,
+                'date': comment.date,
+                "id_discussion": comment.id_discussion.pk,
+                "author": comment.id_user.username,
+                "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
+            })
+
         dados = {
             "id_user": user.id_user,
             "username": user.username,
@@ -54,9 +109,9 @@ class UsersView(viewsets.ModelViewSet):
             "genres": GenresSerializer(user.genres.all(), many=True).data,
             "favorite_books": BooksSerializer(user.favorite_books.all(), many=True).data,
             "reviews": ReviewsSerializer(Review.objects.filter(id_user=user.id_user), many=True).data,
-            "bookmarks": TaggedDiscussionsSerializer(TaggedDiscussions.objects.filter(id_user=user.id_user), many=True).data,
-            "comments": CommentsSerializer(Comments.objects.filter(id_user=user.id_user), many=True).data,
-            "discussions": DiscussionsSerializer(Discussion.objects.filter(id_user=user.id_user), many=True).data
+            "bookmarks": bookmarks_data,
+            "comments": comments_data,
+            "discussions": discussions_data
         }
 
         return Response(dados)
@@ -123,6 +178,83 @@ class UsersView(viewsets.ModelViewSet):
                 leaderboard_data.pop()
 
         return Response(leaderboard_data)
+    
+    @action(detail=True, methods=['get'])
+    def user(self, request, pk=None):
+        user = Users.objects.get(username=pk)
+        discussions = Discussion.objects.filter(id_user=user.id_user)
+        
+        discussions_data = []
+
+        for discussion in discussions:
+            discussions_data.append({
+                'id_discussion': discussion.id_discussion,
+                'title': discussion.title,
+                'description': discussion.description,
+                'date': discussion.date,
+                "cod_ISBN": discussion.cod_ISBN.pk,
+                "qty_comments": discussion.qty_comments,
+                "qty_likes": discussion.qty_likes,
+                "qty_tags": discussion.qty_tags,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_author": discussion.id_user == self.request.user,
+                'is_adult': discussion.is_adult,
+                'is_spoiler': discussion.is_spoiler,
+            })
+
+        bookmarks = TaggedDiscussions.objects.filter(id_user=user.id_user)
+
+        bookmarks_data = []
+
+        for bookmark in bookmarks:
+            bookmarks_data.append({
+                'id_discussion': bookmark.id_discussion.id_discussion,
+                'title': bookmark.id_discussion.title,
+                'description': bookmark.id_discussion.description,
+                'date': bookmark.id_discussion.date,
+                "cod_ISBN": bookmark.id_discussion.cod_ISBN.pk,
+                "qty_comments": bookmark.id_discussion.qty_comments,
+                "qty_likes": bookmark.id_discussion.qty_likes,
+                "qty_tags": bookmark.id_discussion.qty_tags,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=bookmark.id_discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=bookmark.id_discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_author": bookmark.id_discussion.id_user == self.request.user,
+                'is_adult': bookmark.id_discussion.is_adult,
+                'is_spoiler': bookmark.id_discussion.is_spoiler,
+                "author": bookmark.id_discussion.id_user.username,
+            })
+        
+        comments = Comments.objects.filter(id_user=user.id_user)
+
+        comments_data = []
+
+        for comment in comments:
+            comments_data.append({
+                'id_comment': comment.id_comment,
+                'description': comment.description,
+                'date': comment.date,
+                "id_discussion": comment.id_discussion.pk,
+                "author": comment.id_user.username,
+                "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
+            })
+
+        dados = {
+            "id_user": user.id_user,
+            "username": user.username,
+            "email": user.email,
+            "description": user.description or "",
+            "date_birth": user.date_birth,
+            "points": user.points or 0,
+            "genres": GenresSerializer(user.genres.all(), many=True).data,
+            "favorite_books": BooksSerializer(user.favorite_books.all(), many=True).data,
+            "reviews": ReviewsSerializer(Review.objects.filter(id_user=user.id_user), many=True).data,
+            "bookmarks": bookmarks_data,
+            "comments": comments_data,
+            "discussions": discussions_data
+        }
+
+        return Response(dados)
 
 class GenresView(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
@@ -158,6 +290,16 @@ class BooksView(viewsets.ModelViewSet):
                     )
                 ).order_by('-custom_rating')
 
+        if 'popularity' in request.query_params:
+            if request.query_params['popularity'] == 'asc':
+                queryset = queryset.annotate(
+                    custom_popularity=Count('review')
+                ).order_by('custom_popularity')
+            elif request.query_params['popularity'] == 'desc':
+                queryset = queryset.annotate(
+                    custom_popularity=Count('review')
+                ).order_by('-custom_popularity')
+
         serializer = BooksSerializer(queryset, many=True)
         return Response(serializer.data)
     
@@ -188,6 +330,7 @@ class BooksView(viewsets.ModelViewSet):
     
     @action (detail=True, methods=['get'])
     def discussions(self, request, pk=None):
+        current_user = self.request.user
         book = Book.objects.get(cod_ISBN=pk)
         discussions = Discussion.objects.filter(cod_ISBN=book.cod_ISBN)
 
@@ -208,7 +351,10 @@ class BooksView(viewsets.ModelViewSet):
                 "qty_comments": discussion.qty_comments,
                 "qty_likes": discussion.qty_likes,
                 "qty_tags": discussion.qty_tags,
-                "author": discussion.id_user.username
+                "author": discussion.id_user.username,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=self.request.user).exists(),
+                "is_author": discussion.id_user == current_user,
             })
 
         return Response(data)
@@ -232,6 +378,8 @@ class DiscussionsView(viewsets.ModelViewSet):
         serializer.save(id_user=self.request.user)
 
     def list(self, request, format=None):
+        current_user = self.request.user
+        print(current_user)
         discussions = Discussion.objects.all()
         data = []
 
@@ -247,10 +395,95 @@ class DiscussionsView(viewsets.ModelViewSet):
                 },
                 "qty_comments": discussion.qty_comments,
                 "qty_likes": discussion.qty_likes,
-                "qty_tags": discussion.qty_tags
+                "qty_tags": discussion.qty_tags,
+                "is_tagged": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=current_user).exists(),
+                "is_liked": LikedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=current_user).exists(),
+                "is_author": discussion.id_user == current_user,
+                "author": discussion.id_user.username,
             })
 
         return Response(data)
+    
+    def retrieve(self, request, pk=None):
+        current_user = self.request.user
+        try:
+            discussion = Discussion.objects.get(id_discussion=pk)
+        except Discussion.DoesNotExist:
+            return Response({"error": "Discussion not found"}, status=404)
+
+        data = {
+            'id_discussion': discussion.id_discussion,
+            'title': discussion.title,
+            'description': discussion.description,
+            'date': discussion.date,
+            "cod_ISBN": discussion.cod_ISBN.pk,
+            "qty_comments": discussion.qty_comments,
+            "qty_likes": discussion.qty_likes,
+            "qty_tags": discussion.qty_tags,
+            "is_tagged": TaggedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=current_user).exists(),
+            "is_liked": LikedDiscussions.objects.filter(id_discussion=discussion.id_discussion, id_user=current_user).exists(),
+            "is_author": discussion.id_user == current_user,
+            "is_adult": discussion.is_adult,
+            "is_spoiler": discussion.is_spoiler,
+            "author": discussion.id_user.username,
+            "comments": CommentsSerializer(Comments.objects.filter(id_discussion=discussion.id_discussion), many=True).data
+        }
+
+        return Response(data)
+    
+    @action (detail=True, methods=['get'])
+    def comments(self, request, pk=None):
+        discussion = Discussion.objects.get(id_discussion=pk)
+        comments = Comments.objects.filter(id_discussion=discussion.id_discussion)
+
+        data = []
+
+        for comment in comments:
+            data.append({
+                'id_comment': comment.id_comment,
+                'description': comment.description,
+                'date': comment.date,
+                'is_adult': comment.is_adult,
+                'is_spoiler': comment.is_spoiler,
+                'discussion': {
+                    "id_discussion": comment.id_discussion.pk,
+                    "title": comment.id_discussion.title
+                },
+                "author": comment.id_user.username
+            })
+
+        return Response(data)
+
+
+    @action(detail=True, methods=['get'])
+    def like(self, request, pk=None):
+        current_user = self.request.user
+
+        discussion = Discussion.objects.get(id_discussion=pk)
+        user = Users.objects.get(id_user=current_user.id_user)
+
+        liked, created = LikedDiscussions.objects.get_or_create(id_user=user, id_discussion=discussion)
+
+        if not created:
+            liked.delete()
+            return Response({"is_liked": False})
+        else:
+            return Response({"is_liked": True})
+        
+
+    @action(detail=True, methods=['get'])
+    def bookmark(self, request, pk=None):
+        current_user = self.request.user
+        discussion = Discussion.objects.get(id_discussion=pk)
+        user = Users.objects.get(id_user=current_user.id_user)
+
+        tagged, created = TaggedDiscussions.objects.get_or_create(id_user=user, id_discussion=discussion)
+
+        if not created:
+            tagged.delete()
+            return Response({"is_tagged": False})
+        else:
+            return Response({"is_tagged": True})
 
 class TaggedDiscussionsView(viewsets.ModelViewSet):
     queryset = TaggedDiscussions.objects.all()

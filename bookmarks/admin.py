@@ -10,10 +10,10 @@ class BooksForm(admin.ModelAdmin):
     list_display = ['title', 'number_pages']
 
 class ReviewsForm(admin.ModelAdmin):
-    list_display = ['title', 'id_user']
+    list_display = ['title', 'cod_ISBN', 'rating', 'id_user']
 
 class DiscussionsForm(admin.ModelAdmin):
-    list_display = ['title', 'id_user']
+    list_display = ['title', 'cod_ISBN', 'id_user']
 
 class GenresForm(admin.ModelAdmin):
     list_display = ['name']
@@ -22,6 +22,7 @@ class CommentsForm(admin.ModelAdmin):
     list_display = ['id_user', 'id_discussion']
 
 
+admin.site.register(TaggedDiscussions)
 admin.site.register(Comments, CommentsForm)
 admin.site.register(Genre, GenresForm)
 admin.site.register(Users, UsersForm)
