@@ -46,6 +46,9 @@ class TaggedDiscussionsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CommentsSerializer(serializers.ModelSerializer):
+    answers = serializers.ReadOnlyField()
+    likes = serializers.ReadOnlyField()
+    author = serializers.ReadOnlyField(source='id_user.username')
     class Meta:
         model = Comments
         fields = '__all__'

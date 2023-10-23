@@ -237,6 +237,8 @@ class UsersView(viewsets.ModelViewSet):
                 "id_discussion": comment.id_discussion.pk,
                 "author": comment.id_user.username,
                 "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
+                'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
+                'answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
             })
 
         dados = {
@@ -430,30 +432,6 @@ class DiscussionsView(viewsets.ModelViewSet):
         }
 
         return Response(data)
-    
-    @action (detail=True, methods=['get'])
-    def comments(self, request, pk=None):
-        discussion = Discussion.objects.get(id_discussion=pk)
-        comments = Comments.objects.filter(id_discussion=discussion.id_discussion)
-
-        data = []
-
-        for comment in comments:
-            data.append({
-                'id_comment': comment.id_comment,
-                'description': comment.description,
-                'date': comment.date,
-                'is_adult': comment.is_adult,
-                'is_spoiler': comment.is_spoiler,
-                'discussion': {
-                    "id_discussion": comment.id_discussion.pk,
-                    "title": comment.id_discussion.title
-                },
-                "author": comment.id_user.username
-            })
-
-        return Response(data)
-
 
     @action(detail=True, methods=['get'])
     def like(self, request, pk=None):
@@ -492,6 +470,8 @@ class TaggedDiscussionsView(viewsets.ModelViewSet):
 class CommentsView(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializer
+
+    permission_classes = []
 
     def perform_create(self, serializer):
         serializer.save(id_user=self.request.user)

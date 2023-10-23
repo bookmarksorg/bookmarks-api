@@ -181,13 +181,13 @@ class LikedDiscussions(models.Model):
 class Comments(models.Model):
     id_comment = models.AutoField(primary_key=True)
     description = models.TextField()
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
     id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     id_discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['date']
         verbose_name_plural = 'Comments'
 
     def __str__(self):
@@ -198,11 +198,14 @@ class Comments(models.Model):
 
     def likes(self):
         return LikedComments.objects.filter(id_comment=self.id_comment).count()
+    
+    def author(self):
+        return self.id_user.username
 
 class LikedComments(models.Model):
     id_liked = models.AutoField(primary_key=True)
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    id_discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
+    id_comment = models.ForeignKey(Comments, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['id_liked']
