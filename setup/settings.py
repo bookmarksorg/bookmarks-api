@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000","https://bookmarks-bookmarks.vercel.app",]
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:3000',"https://bookmarks-bookmarks-api.brazilsouth.cloudapp.azure.com/",]
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:3000',"https://bookmarks-bookmarks-api.brazilsouth.cloudapp.azure.com",]
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
