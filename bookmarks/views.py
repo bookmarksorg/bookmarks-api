@@ -416,17 +416,17 @@ class DiscussionsView(viewsets.ModelViewSet):
         comments = []
 
         for comment in Comments.objects.filter(id_discussion=discussion.id_discussion):
-            if comment.id_related_comment is None:
+            if comment.is_root:
                 comments.append({
                     'id_comment': comment.id_comment,
                     'description': comment.description,
                     'date': comment.date,
                     "id_discussion": comment.id_discussion.pk,
-                    "author": comment.id_user.username,
+                    "author": comment.author,
                     "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=current_user).exists(),
-                    'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
-                    'qty_answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
-                    'answers': CommentsSerializer(Comments.objects.filter(id_related_comment=comment.id_comment), many=True).data
+                    'likes': comment.likes,
+                    'qty_answers': comment.answers.count(),
+                    'depth': comment.depth
                 })
 
         data = {
@@ -492,28 +492,6 @@ class CommentsView(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(id_user=self.request.user)
 
-    def list(self, request, format=None):
-        current_user = self.request.user
-        print(current_user)
-        comments = Comments.objects.all()
-
-        data = []
-
-        for comment in comments:
-            data.append({
-                'id_comment': comment.id_comment,
-                'description': comment.description,
-                'date': comment.date,
-                "id_discussion": comment.id_discussion.pk,
-                "author": comment.id_user.username,
-                "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=current_user).exists(),
-                'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
-                'qty_answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
-                'answers': CommentsSerializer(Comments.objects.filter(id_related_comment=comment.id_comment), many=True).data
-            })
-
-        return Response(data)
-
     @action(detail=True, methods=['get'])
     def like(self, request, pk=None):
         current_user = self.request.user
@@ -528,3 +506,25 @@ class CommentsView(viewsets.ModelViewSet):
             return Response({"is_liked": False})
         else:
             return Response({"is_liked": True})
+        
+    @action(detail=True, methods=['get'])
+    def answers(self, request, pk=None):
+        comment = Comments.objects.get(id_comment=pk)
+        answers = Comments.objects.filter(id_related_comment=comment.id_comment)
+
+        data = []
+
+        for answer in answers:
+            data.append({
+                'id_comment': answer.id_comment,
+                'description': answer.description,
+                'date': answer.date,
+                "id_discussion": answer.id_discussion.pk,
+                "author": answer.id_user.username,
+                "is_liked": LikedComments.objects.filter(id_comment=answer.id_comment, id_user=self.request.user).exists(),
+                'likes': LikedComments.objects.filter(id_comment=answer.id_comment).count(),
+                'qty_answers': Comments.objects.filter(id_related_comment=answer.id_comment).count(),
+                'depth': answer.depth
+            })
+
+        return Response(data)

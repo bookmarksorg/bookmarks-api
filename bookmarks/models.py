@@ -182,7 +182,7 @@ class Comments(models.Model):
     id_comment = models.AutoField(primary_key=True)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
-    id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='child_comments')
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     id_discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
 
@@ -193,14 +193,30 @@ class Comments(models.Model):
     def __str__(self):
         return str(self.id_comment)
 
+    @property
     def answers(self):
-        return Comments.objects.filter(id_related_comment=self.id_comment).count()
+        return self.child_comments.all()
 
+    @property
     def likes(self):
         return LikedComments.objects.filter(id_comment=self.id_comment).count()
     
+    @property
+    def is_root(self):
+        return self.id_related_comment is None
+    
+    @property
     def author(self):
         return self.id_user.username
+    
+    @property
+    def depth(self):
+        depth = 0
+        comment = self
+        while comment.id_related_comment is not None:
+            comment = comment.id_related_comment
+            depth += 1
+        return depth
 
 class LikedComments(models.Model):
     id_liked = models.AutoField(primary_key=True)
