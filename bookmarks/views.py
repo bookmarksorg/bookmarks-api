@@ -384,7 +384,6 @@ class DiscussionsView(viewsets.ModelViewSet):
 
     def list(self, request, format=None):
         current_user = self.request.user
-        print(current_user)
         discussions = Discussion.objects.all()
         data = []
 
