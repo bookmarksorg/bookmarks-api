@@ -97,6 +97,7 @@ class UsersView(viewsets.ModelViewSet):
                 "id_discussion": comment.id_discussion.pk,
                 "author": comment.id_user.username,
                 "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
+                "book": comment.id_discussion.cod_ISBN.pk
             })
 
         dados = {
@@ -239,6 +240,7 @@ class UsersView(viewsets.ModelViewSet):
                 "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
                 'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
                 'answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
+                "book": comment.id_discussion.cod_ISBN.pk
             })
 
         dados = {
