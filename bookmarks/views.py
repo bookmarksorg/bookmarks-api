@@ -120,6 +120,7 @@ class UsersView(viewsets.ModelViewSet):
     def update(self, request, pk=None, partial=True):
         user = Users.objects.get(id_user=self.request.user.id_user)
         if 'genres' in request.data:
+            user.genres.clear()
             for genre in request.data['genres']:
                 genre = Genre.objects.get(name__iexact=genre)
                 user.genres.add(genre)
