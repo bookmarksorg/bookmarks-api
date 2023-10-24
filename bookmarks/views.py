@@ -181,7 +181,7 @@ class UsersView(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def user(self, request, pk=None):
-        user = Users.objects.get(username=pk)
+        user = Users.objects.get(username=str(pk).lower())
         discussions = Discussion.objects.filter(id_user=user.id_user)
         
         discussions_data = []
