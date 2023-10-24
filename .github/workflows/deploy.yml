@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # using Debian image as base
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - name: Install sshpass
+        run: sudo apt-get install -y ssh
+  
+      - name: Run deploy script
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem 
+          ssh -i private_key.pem -v -o StrictHostKeyChecking=no ${{ secrets.SSH_HOST }} 'cd bookmarks-api && git pull && sudo docker-compose up -d --build'
