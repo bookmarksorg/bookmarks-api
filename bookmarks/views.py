@@ -412,6 +412,22 @@ class DiscussionsView(viewsets.ModelViewSet):
             discussion = Discussion.objects.get(id_discussion=pk)
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found"}, status=404)
+        
+        comments = []
+
+        for comment in Comments.objects.filter(id_discussion=discussion.id_discussion):
+            if comment.id_related_comment is None:
+                comments.append({
+                    'id_comment': comment.id_comment,
+                    'description': comment.description,
+                    'date': comment.date,
+                    "id_discussion": comment.id_discussion.pk,
+                    "author": comment.id_user.username,
+                    "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=current_user).exists(),
+                    'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
+                    'qty_answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
+                    'answers': CommentsSerializer(Comments.objects.filter(id_related_comment=comment.id_comment), many=True).data
+                })
 
         data = {
             'id_discussion': discussion.id_discussion,
@@ -428,7 +444,7 @@ class DiscussionsView(viewsets.ModelViewSet):
             "is_adult": discussion.is_adult,
             "is_spoiler": discussion.is_spoiler,
             "author": discussion.id_user.username,
-            "comments": CommentsSerializer(Comments.objects.filter(id_discussion=discussion.id_discussion), many=True).data
+            "comments": comments
         }
 
         return Response(data)
@@ -475,3 +491,40 @@ class CommentsView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(id_user=self.request.user)
+
+    def list(self, request, format=None):
+        current_user = self.request.user
+        print(current_user)
+        comments = Comments.objects.all()
+
+        data = []
+
+        for comment in comments:
+            data.append({
+                'id_comment': comment.id_comment,
+                'description': comment.description,
+                'date': comment.date,
+                "id_discussion": comment.id_discussion.pk,
+                "author": comment.id_user.username,
+                "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=current_user).exists(),
+                'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
+                'qty_answers': Comments.objects.filter(id_related_comment=comment.id_comment).count(),
+                'answers': CommentsSerializer(Comments.objects.filter(id_related_comment=comment.id_comment), many=True).data
+            })
+
+        return Response(data)
+
+    @action(detail=True, methods=['get'])
+    def like(self, request, pk=None):
+        current_user = self.request.user
+
+        comment = Comments.objects.get(id_comment=pk)
+        user = Users.objects.get(id_user=current_user.id_user)
+
+        liked, created = LikedComments.objects.get_or_create(id_user=user, id_comment=comment)
+
+        if not created:
+            liked.delete()
+            return Response({"is_liked": False})
+        else:
+            return Response({"is_liked": True})
