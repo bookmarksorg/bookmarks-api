@@ -237,6 +237,7 @@ class UsersView(viewsets.ModelViewSet):
                 'description': comment.description,
                 'date': comment.date,
                 "id_discussion": comment.id_discussion.pk,
+                "discussion": comment.id_discussion.title,
                 "author": comment.id_user.username,
                 "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=self.request.user).exists(),
                 'likes': LikedComments.objects.filter(id_comment=comment.id_comment).count(),
@@ -424,6 +425,7 @@ class DiscussionsView(viewsets.ModelViewSet):
                     'description': comment.description,
                     'date': comment.date,
                     "id_discussion": comment.id_discussion.pk,
+                    "discussion": comment.id_discussion.title,
                     "author": comment.author,
                     "is_liked": LikedComments.objects.filter(id_comment=comment.id_comment, id_user=current_user).exists(),
                     'likes': comment.likes,
@@ -511,7 +513,10 @@ class CommentsView(viewsets.ModelViewSet):
         
     @action(detail=True, methods=['get'])
     def answers(self, request, pk=None):
-        comment = Comments.objects.get(id_comment=pk)
+        try:
+            comment = Comments.objects.get(id_comment=pk)
+        except Comments.DoesNotExist:
+            return Response({"error": "Comment not found"})
         answers = Comments.objects.filter(id_related_comment=comment.id_comment)
 
         data = []

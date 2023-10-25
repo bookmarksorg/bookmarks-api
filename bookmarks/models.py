@@ -182,7 +182,7 @@ class Comments(models.Model):
     id_comment = models.AutoField(primary_key=True)
     description = models.TextField()
     date = models.DateField(auto_now_add=True)
-    id_related_comment = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='child_comments')
+    id_related_comment = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='child_comments')
     id_user = models.ForeignKey(Users, on_delete=models.CASCADE, null=True, blank=True)
     id_discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
 
