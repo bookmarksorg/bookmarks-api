@@ -12,7 +12,6 @@ def award_points_to_user_review(sender, instance, created, **kwargs):
             user.points += 10
         user.save()
 
-
 @receiver(post_save, sender=Discussion)
 def award_points_to_user_discussion(sender, instance, created, **kwargs):
     if created:
